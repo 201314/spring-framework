@@ -50,7 +50,7 @@ task api(type: Javadoc) {
 	}
 }
 
-dokka {
+/*dokka {
 	dependsOn {
 		tasks.getByName("api")
 	}
@@ -77,9 +77,9 @@ dokka {
 	externalDocumentationLink {
 		url = new URL("http://www.reactive-streams.org/reactive-streams-1.0.1-javadoc/")
 	}
-}
+}*/
 
-asciidoctor {
+/*asciidoctor {
 	sources {
 		include '*.adoc'
 	}
@@ -107,7 +107,7 @@ asciidoctor {
 			stylesheet: 'main.css',
 			'spring-version': project.version
 
-}
+}*/
 
 task docsZip(type: Zip, dependsOn: ['api', 'asciidoctor', 'dokka']) {
 	group = "Distribution"
