@@ -1,6 +1,18 @@
 buildscript {
 	repositories {
+		mavenLocal()
+		jcenter()
+		google()
+		maven { url "https://repo.springsource.org/plugins-release" }
 		maven { url "https://repo.spring.io/plugins-release" }
+		maven { url "https://maven.aliyun.com/repository/public" }
+		maven { url "https://maven.aliyun.com/repository/google" }
+		maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
+		maven { url "https://maven.aliyun.com/repository/spring" }
+		maven { url "https://maven.aliyun.com/repository/spring-plugin" }
+		maven { url "https://maven.aliyun.com/repository/grails-core" }
+		maven { url "https://maven.aliyun.com/repository/apache-snapshots" }
+		maven { url "https://mvnrepository.com/"}
 	}
 	dependencies {
 		classpath("io.spring.gradle:propdeps-plugin:0.0.9.RELEASE")
@@ -30,12 +42,12 @@ ext {
 
 	aspectjVersion       = "1.9.1"
 	freemarkerVersion    = "2.3.28"
-	groovyVersion        = "2.5.2"
+	groovyVersion        = "2.4.15"
 	hsqldbVersion        = "2.4.1"
 	jackson2Version      = "2.9.7"
 	jettyVersion         = "9.4.12.v20180830"
 	junit5Version        = "5.3.1"
-	kotlinVersion        = "1.2.70"
+	kotlinVersion        = "1.2.61"
 	log4jVersion         = "2.11.1"
 	nettyVersion         = "4.1.29.Final"
 	reactorVersion       = "Californium-RELEASE"
@@ -268,7 +280,7 @@ configure(rootProject) {
 		testCompile(project(":spring-expression"))
 		testCompile(project(":spring-jdbc"))
 		testCompile(project(":spring-orm"))
-		testCompile(project(":spring-test"))
+		//testCompile(project(":spring-test"))
 		testCompile(project(":spring-tx"))
 		testCompile(project(":spring-web"))
 		testCompile("javax.inject:javax.inject:1")
