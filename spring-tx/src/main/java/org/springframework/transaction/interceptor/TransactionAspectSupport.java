@@ -286,21 +286,26 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
+			// 1. 根据需要创建事务
 			TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 			Object retVal = null;
 			try {
 				// This is an around advice: Invoke the next interceptor in the chain.
 				// This will normally result in a target object being invoked.
+				// 2.继续调用链条中的下一个拦截器
 				retVal = invocation.proceedWithInvocation();
 			}
 			catch (Throwable ex) {
 				// target invocation exception
 				completeTransactionAfterThrowing(txInfo, ex);
+				// 3. 抛出异常时，根据事物属性配置，决定是否回滚或提交
 				throw ex;
 			}
 			finally {
+				// 4. 将旧的事务重新和当前绑定
 				cleanupTransactionInfo(txInfo);
 			}
+			// 5. 没有异常时，自动提交事务
 			commitTransactionAfterReturning(txInfo);
 			return retVal;
 		}
@@ -471,6 +476,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
+				// 根据事务配置的属性获取 事物状态管理
 				status = tm.getTransaction(txAttr);
 			}
 			else {
@@ -516,6 +522,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		// We always bind the TransactionInfo to the thread, even if we didn't create
 		// a new transaction here. This guarantees that the TransactionInfo stack
 		// will be managed correctly even if no transaction was created by this aspect.
+		// 1.将当前事务相关信息和当前线程绑定
 		txInfo.bindToThread();
 		return txInfo;
 	}
