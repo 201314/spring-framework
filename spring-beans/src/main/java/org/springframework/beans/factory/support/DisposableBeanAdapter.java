@@ -91,6 +91,7 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 
 
 	/**
+	 *
 	 * Create a new DisposableBeanAdapter for the given bean.
 	 * @param bean the bean instance (never {@code null})
 	 * @param beanName the name of the bean
@@ -118,8 +119,7 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 					throw new BeanDefinitionValidationException("Could not find a destroy method named '" +
 							destroyMethodName + "' on bean with name '" + beanName + "'");
 				}
-			}
-			else {
+			} else {
 				Class<?>[] paramTypes = this.destroyMethod.getParameterTypes();
 				if (paramTypes.length > 1) {
 					throw new BeanDefinitionValidationException("Method '" + destroyMethodName + "' of bean '" +
@@ -190,12 +190,10 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 			if (!(bean instanceof DisposableBean)) {
 				try {
 					return bean.getClass().getMethod(CLOSE_METHOD_NAME).getName();
-				}
-				catch (NoSuchMethodException ex) {
+				} catch (NoSuchMethodException ex) {
 					try {
 						return bean.getClass().getMethod(SHUTDOWN_METHOD_NAME).getName();
-					}
-					catch (NoSuchMethodException ex2) {
+					} catch (NoSuchMethodException ex2) {
 						// no candidate destroy method found
 					}
 				}

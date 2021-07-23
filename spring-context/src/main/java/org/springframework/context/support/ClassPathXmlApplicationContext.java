@@ -140,6 +140,9 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 
 		super(parent);
 		setConfigLocations(configLocations);
+		/**
+		 * 对XML解析并加载
+		 */
 		if (refresh) {
 			refresh();
 		}

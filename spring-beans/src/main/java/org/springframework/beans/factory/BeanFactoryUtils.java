@@ -72,6 +72,9 @@ public abstract class BeanFactoryUtils {
 	}
 
 	/**
+	 * 如果name以&开头，则是一个FactoryBean的实例特征，此时getBean获得的是FactoryBean实例。
+	 * 如果要获取FactoryBean.getObject对应的实例，则要去除开头的所有 &
+	 *
 	 * Return the actual bean name, stripping out the factory dereference
 	 * prefix (if any, also stripping repeated factory prefixes if found).
 	 * @param name the name of the bean

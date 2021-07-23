@@ -16,6 +16,8 @@
 
 package org.springframework.util;
 
+import org.springframework.lang.Nullable;
+
 import java.beans.Introspector;
 import java.io.Closeable;
 import java.io.Externalizable;
@@ -38,8 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import org.springframework.lang.Nullable;
 
 /**
  * Miscellaneous class utility methods.
@@ -1180,9 +1180,12 @@ public abstract class ClassUtils {
 	}
 
 	/**
+	 * 获取某个类中某个方法名的个数
+	 * <p>
 	 * Return the number of methods with a given name (with any argument types),
 	 * for the given class and/or its superclasses. Includes non-public methods.
-	 * @param clazz	the clazz to check
+	 *
+	 * @param clazz      the clazz to check
 	 * @param methodName the name of the method
 	 * @return the number of methods with the given name
 	 */
