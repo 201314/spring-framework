@@ -52,26 +52,21 @@ public abstract class AopNamespaceUtils {
     private static final String EXPOSE_PROXY_ATTRIBUTE = "expose-proxy";
 
 
-    public static void registerAutoProxyCreatorIfNecessary(
-            ParserContext parserContext, Element sourceElement) {
-
+    public static void registerAutoProxyCreatorIfNecessary(ParserContext parserContext, Element sourceElement) {
         BeanDefinition beanDefinition = AopConfigUtils.registerAutoProxyCreatorIfNecessary(
                 parserContext.getRegistry(), parserContext.extractSource(sourceElement));
         useClassProxyingIfNecessary(parserContext.getRegistry(), sourceElement);
         registerComponentIfNecessary(beanDefinition, parserContext);
     }
 
-    public static void registerAspectJAutoProxyCreatorIfNecessary(
-            ParserContext parserContext, Element sourceElement) {
-
+    public static void registerAspectJAutoProxyCreatorIfNecessary(ParserContext parserContext, Element sourceElement) {
         BeanDefinition beanDefinition = AopConfigUtils.registerAspectJAutoProxyCreatorIfNecessary(
                 parserContext.getRegistry(), parserContext.extractSource(sourceElement));
         useClassProxyingIfNecessary(parserContext.getRegistry(), sourceElement);
         registerComponentIfNecessary(beanDefinition, parserContext);
     }
 
-    public static void registerAspectJAnnotationAutoProxyCreatorIfNecessary(
-            ParserContext parserContext, Element sourceElement) {
+    public static void registerAspectJAnnotationAutoProxyCreatorIfNecessary(ParserContext parserContext, Element sourceElement) {
         /**
          * 对于AOP的实现，基本上都是靠AnnotationAwareAspectJAutoProxyCreator去完成，它可以根据@Point 注解定义的切点来自动代理相匹配的bean。
          *
@@ -88,9 +83,9 @@ public abstract class AopNamespaceUtils {
      * 对于proxy-target-class以及expose-proxy属性的处理
      * <p>
      * 强制使用CGLIB :
-     *      <aop:config proxy-target-class="true"/>
+     * <aop:config proxy-target-class="true"/>
      * 强制使用CGLIB代理并支持@AspectJ自动代理 :
-     *      <aop:aspectj-autoproxy proxy-target-class="true"/>
+     * <aop:aspectj-autoproxy proxy-target-class="true"/>
      *
      * @param registry
      * @param sourceElement
