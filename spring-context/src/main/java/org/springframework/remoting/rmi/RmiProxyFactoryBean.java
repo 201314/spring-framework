@@ -47,7 +47,6 @@ import org.springframework.util.Assert;
  * to combine Java serialization with HTTP-based transport.
  *
  * @author Juergen Hoeller
- * @since 13.05.2003
  * @see #setServiceInterface
  * @see #setServiceUrl
  * @see RmiClientInterceptor
@@ -57,34 +56,47 @@ import org.springframework.util.Assert;
  * @see org.springframework.remoting.RemoteAccessException
  * @see org.springframework.remoting.caucho.HessianProxyFactoryBean
  * @see org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean
+ * @since 13.05.2003
+ */
+
+/**
+ * 客户端实现关键类
  */
 public class RmiProxyFactoryBean extends RmiClientInterceptor implements FactoryBean<Object>, BeanClassLoaderAware {
 
-	private Object serviceProxy;
+    private Object serviceProxy;
 
+    @Override
+    public void afterPropertiesSet() {
+        super.afterPropertiesSet();
+        Class<?> ifc = getServiceInterface();
+        Assert.notNull(ifc, "Property 'serviceInterface' is required");
+        /**
+         * 根据设置的接口创建代理，并使用当前类this作为增强器
+         */
+        this.serviceProxy = new ProxyFactory(ifc, this).getProxy(getBeanClassLoader());
+    }
 
-	@Override
-	public void afterPropertiesSet() {
-		super.afterPropertiesSet();
-		Class<?> ifc = getServiceInterface();
-		Assert.notNull(ifc, "Property 'serviceInterface' is required");
-		this.serviceProxy = new ProxyFactory(ifc, this).getProxy(getBeanClassLoader());
-	}
+    /**
+     * 当获取该bean时，首先通过afterPropertiesSet创建代理类，并使用当前类作为增强方法，
+     * 而在调用该bean时其实返回的是代理类，既然调用的是代理类，那么又会使用当前bean作为增强器进行增强，
+     * 也就是说会调用 RmiProxyFactoryBean 的父类 RmiClientInterceptor的invoke方法。
+     *
+     * @return
+     */
+    @Override
+    public Object getObject() {
+        return this.serviceProxy;
+    }
 
+    @Override
+    public Class<?> getObjectType() {
+        return getServiceInterface();
+    }
 
-	@Override
-	public Object getObject() {
-		return this.serviceProxy;
-	}
-
-	@Override
-	public Class<?> getObjectType() {
-		return getServiceInterface();
-	}
-
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
 
 }

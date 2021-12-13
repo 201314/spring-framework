@@ -18,7 +18,6 @@ package org.springframework.remoting.rmi;
 
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.Remote;
-
 import org.springframework.remoting.support.RemoteInvocation;
 import org.springframework.remoting.support.RemoteInvocationBasedExporter;
 
@@ -33,44 +32,51 @@ import org.springframework.remoting.support.RemoteInvocationBasedExporter;
  * on all service methods. However, in and out parameters still have to be serializable.
  *
  * @author Juergen Hoeller
- * @since 1.2.5
  * @see RmiServiceExporter
  * @see JndiRmiServiceExporter
+ * @since 1.2.5
  */
 public abstract class RmiBasedExporter extends RemoteInvocationBasedExporter {
 
-	/**
-	 * Determine the object to export: either the service object itself
-	 * or a RmiInvocationWrapper in case of a non-RMI service object.
-	 * @return the RMI object to export
-	 * @see #setService
-	 * @see #setServiceInterface
-	 */
-	protected Remote getObjectToExport() {
-		// determine remote object
-		if (getService() instanceof Remote &&
-				(getServiceInterface() == null || Remote.class.isAssignableFrom(getServiceInterface()))) {
-			// conventional RMI service
-			return (Remote) getService();
-		}
-		else {
-			// RMI invoker
-			if (logger.isDebugEnabled()) {
-				logger.debug("RMI service [" + getService() + "] is an RMI invoker");
-			}
-			return new RmiInvocationWrapper(getProxyForService(), this);
-		}
-	}
+    /**
+     * Determine the object to export: either the service object itself
+     * or a RmiInvocationWrapper in case of a non-RMI service object.
+     *
+     * @return the RMI object to export
+     * @see #setService
+     * @see #setServiceInterface
+     */
+    protected Remote getObjectToExport() {
+        /**
+         * 如果配置的service属性对应的类实现了Remote接口且没有配置serviceInterface属性
+         */
+        // determine remote object
+        if (getService() instanceof Remote &&
+            (getServiceInterface() == null || Remote.class.isAssignableFrom(getServiceInterface()))) {
+            // conventional RMI service
+            return (Remote) getService();
+        } else {
+            // RMI invoker
+            if (logger.isDebugEnabled()) {
+                logger.debug("RMI service [" + getService() + "] is an RMI invoker");
+            }
+            /**
+             * 经过这样的封装，客户端与服务端便可以达成一致协议，当客户端检测到是RMIInvocation Wrapper 类型stub的时候便会直接调用其invoke方法，
+             * 使得调用端与服务端很好地连接在了一起。而RMIInvocationWrapper 封装了用于处理请求的代理类，在invoke中便会使用代理类进行进一步处理。
+             */
+            return new RmiInvocationWrapper(getProxyForService(), this);
+        }
+    }
 
-	/**
-	 * Redefined here to be visible to RmiInvocationWrapper.
-	 * Simply delegates to the corresponding superclass method.
-	 */
-	@Override
-	protected Object invoke(RemoteInvocation invocation, Object targetObject)
-			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    /**
+     * Redefined here to be visible to RmiInvocationWrapper.
+     * Simply delegates to the corresponding superclass method.
+     */
+    @Override
+    protected Object invoke(RemoteInvocation invocation, Object targetObject)
+        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 
-		return super.invoke(invocation, targetObject);
-	}
+        return super.invoke(invocation, targetObject);
+    }
 
 }
