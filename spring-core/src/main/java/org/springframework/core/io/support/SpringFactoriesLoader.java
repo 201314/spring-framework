@@ -25,10 +25,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.io.UrlResource;
 import org.springframework.lang.Nullable;
@@ -129,6 +127,9 @@ public final class SpringFactoriesLoader {
 			return result;
 		}
 
+		/**
+		 * 获取META-INF/spring.factories资源中的内容，并放入缓存中
+		 */
 		try {
 			Enumeration<URL> urls = (classLoader != null ?
 					classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :
