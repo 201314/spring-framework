@@ -220,7 +220,7 @@ class ConfigurationClassParser {
 
     protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
         /**
-         * 解析 @Conditional 判断哪些需要跳过不解析
+         * 1.解析 @Conditional 判断哪些需要跳过不解析
          */
         if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
             return;
