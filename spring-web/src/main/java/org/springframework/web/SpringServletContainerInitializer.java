@@ -16,16 +16,15 @@
 
 package org.springframework.web;
 
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
-
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ReflectionUtils;
@@ -104,72 +103,83 @@ import org.springframework.util.ReflectionUtils;
  * @author Chris Beams
  * @author Juergen Hoeller
  * @author Rossen Stoyanchev
- * @since 3.1
  * @see #onStartup(Set, ServletContext)
  * @see WebApplicationInitializer
+ * @since 3.1
+ */
+
+/**
+ * 1. Servlet3.0加入了一个特性：容器启动时会使用Java的SPI(Service Provider Interface)机制读取META-INF/services下的
+ * javax.servlet.ServletContainerInitializer文件，并会对其中列出的每一个ServletContainerInitializer进行实例化，并调用onStartup()方法
+ * <p>
+ * 2. Spring Web在自己的claspath:META-INF/services下的 javax.servlet.ServletContainerInitializer文件中加入
+ * org.springframework.web.SpringServletContainerlnitializer一行，于是此类被实例化并调用。
+ * <p>
+ * 3. SpringServletContainerInitializer 使用HandlesTypes声明自己处理实现了WebApplicationInitializer的类，
+ * 于是只要实现了WebApplicationInitializer接口，就会被实现化并调用onStartup方法。
  */
 @HandlesTypes(WebApplicationInitializer.class)
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
-	/**
-	 * Delegate the {@code ServletContext} to any {@link WebApplicationInitializer}
-	 * implementations present on the application classpath.
-	 * <p>Because this class declares @{@code HandlesTypes(WebApplicationInitializer.class)},
-	 * Servlet 3.0+ containers will automatically scan the classpath for implementations
-	 * of Spring's {@code WebApplicationInitializer} interface and provide the set of all
-	 * such types to the {@code webAppInitializerClasses} parameter of this method.
-	 * <p>If no {@code WebApplicationInitializer} implementations are found on the classpath,
-	 * this method is effectively a no-op. An INFO-level log message will be issued notifying
-	 * the user that the {@code ServletContainerInitializer} has indeed been invoked but that
-	 * no {@code WebApplicationInitializer} implementations were found.
-	 * <p>Assuming that one or more {@code WebApplicationInitializer} types are detected,
-	 * they will be instantiated (and <em>sorted</em> if the @{@link
-	 * org.springframework.core.annotation.Order @Order} annotation is present or
-	 * the {@link org.springframework.core.Ordered Ordered} interface has been
-	 * implemented). Then the {@link WebApplicationInitializer#onStartup(ServletContext)}
-	 * method will be invoked on each instance, delegating the {@code ServletContext} such
-	 * that each instance may register and configure servlets such as Spring's
-	 * {@code DispatcherServlet}, listeners such as Spring's {@code ContextLoaderListener},
-	 * or any other Servlet API componentry such as filters.
-	 * @param webAppInitializerClasses all implementations of
-	 * {@link WebApplicationInitializer} found on the application classpath
-	 * @param servletContext the servlet context to be initialized
-	 * @see WebApplicationInitializer#onStartup(ServletContext)
-	 * @see AnnotationAwareOrderComparator
-	 */
-	@Override
-	public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
-			throws ServletException {
+    /**
+     * Delegate the {@code ServletContext} to any {@link WebApplicationInitializer}
+     * implementations present on the application classpath.
+     * <p>Because this class declares @{@code HandlesTypes(WebApplicationInitializer.class)},
+     * Servlet 3.0+ containers will automatically scan the classpath for implementations
+     * of Spring's {@code WebApplicationInitializer} interface and provide the set of all
+     * such types to the {@code webAppInitializerClasses} parameter of this method.
+     * <p>If no {@code WebApplicationInitializer} implementations are found on the classpath,
+     * this method is effectively a no-op. An INFO-level log message will be issued notifying
+     * the user that the {@code ServletContainerInitializer} has indeed been invoked but that
+     * no {@code WebApplicationInitializer} implementations were found.
+     * <p>Assuming that one or more {@code WebApplicationInitializer} types are detected,
+     * they will be instantiated (and <em>sorted</em> if the @{@link
+     * org.springframework.core.annotation.Order @Order} annotation is present or
+     * the {@link org.springframework.core.Ordered Ordered} interface has been
+     * implemented). Then the {@link WebApplicationInitializer#onStartup(ServletContext)}
+     * method will be invoked on each instance, delegating the {@code ServletContext} such
+     * that each instance may register and configure servlets such as Spring's
+     * {@code DispatcherServlet}, listeners such as Spring's {@code ContextLoaderListener},
+     * or any other Servlet API componentry such as filters.
+     *
+     * @param webAppInitializerClasses all implementations of
+     *                                 {@link WebApplicationInitializer} found on the application classpath
+     * @param servletContext           the servlet context to be initialized
+     * @see WebApplicationInitializer#onStartup(ServletContext)
+     * @see AnnotationAwareOrderComparator
+     */
+    @Override
+    public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
+        throws ServletException {
 
-		List<WebApplicationInitializer> initializers = new LinkedList<>();
+        List<WebApplicationInitializer> initializers = new LinkedList<>();
 
-		if (webAppInitializerClasses != null) {
-			for (Class<?> waiClass : webAppInitializerClasses) {
-				// Be defensive: Some servlet containers provide us with invalid classes,
-				// no matter what @HandlesTypes says...
-				if (!waiClass.isInterface() && !Modifier.isAbstract(waiClass.getModifiers()) &&
-						WebApplicationInitializer.class.isAssignableFrom(waiClass)) {
-					try {
-						initializers.add((WebApplicationInitializer)
-								ReflectionUtils.accessibleConstructor(waiClass).newInstance());
-					}
-					catch (Throwable ex) {
-						throw new ServletException("Failed to instantiate WebApplicationInitializer class", ex);
-					}
-				}
-			}
-		}
+        if (webAppInitializerClasses != null) {
+            for (Class<?> waiClass : webAppInitializerClasses) {
+                // Be defensive: Some servlet containers provide us with invalid classes,
+                // no matter what @HandlesTypes says...
+                if (!waiClass.isInterface() && !Modifier.isAbstract(waiClass.getModifiers()) &&
+                    WebApplicationInitializer.class.isAssignableFrom(waiClass)) {
+                    try {
+                        initializers.add((WebApplicationInitializer)
+                            ReflectionUtils.accessibleConstructor(waiClass).newInstance());
+                    } catch (Throwable ex) {
+                        throw new ServletException("Failed to instantiate WebApplicationInitializer class", ex);
+                    }
+                }
+            }
+        }
 
-		if (initializers.isEmpty()) {
-			servletContext.log("No Spring WebApplicationInitializer types detected on classpath");
-			return;
-		}
+        if (initializers.isEmpty()) {
+            servletContext.log("No Spring WebApplicationInitializer types detected on classpath");
+            return;
+        }
 
-		servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
-		AnnotationAwareOrderComparator.sort(initializers);
-		for (WebApplicationInitializer initializer : initializers) {
-			initializer.onStartup(servletContext);
-		}
-	}
+        servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
+        AnnotationAwareOrderComparator.sort(initializers);
+        for (WebApplicationInitializer initializer : initializers) {
+            initializer.onStartup(servletContext);
+        }
+    }
 
 }
